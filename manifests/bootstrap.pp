@@ -3,6 +3,7 @@ class clgxutil::bootstrap {
 
   if $::kernel == 'Linux' {
     $bootstrap_dir = '/bootstrap'
+    $bootstrap_file = ''
 
     file {$bootstrap_dir:
       ensure => directory,
@@ -12,16 +13,17 @@ class clgxutil::bootstrap {
   }
   elsif $::kernel == 'Windows' {
     $bootstrap_dir = 'c:/bootstrap'
+    $bootstrap_file = 'puppetapply.ps1'
 
     file {$bootstrap_dir:
       ensure => directory,
     }
-    # -> file {join([$bootstrap_dir, 'LinuxPreBake.sh'],'/'):
-    #   source => 'puppet:///modules/clgxutil/bootstrap/WindowsPreBake.sh',
-    # }
+
+    $puppet_apply = "${bootstrap_dir}/${bootstrap_file}"
+    file {$puppet_apply:
+      source => "puppet:///modules/clgxutil/bootstrap/${bootstrap_file}",
+    }
 
   }
-
-
 
 }
