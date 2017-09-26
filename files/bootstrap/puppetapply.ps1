@@ -27,3 +27,5 @@ cmd.exe /c $applycmd manifest.pp
 if($LastExitCode -ne 2) {
   throw "Puppet did not apply correctly"
 }
+
+exit 0
