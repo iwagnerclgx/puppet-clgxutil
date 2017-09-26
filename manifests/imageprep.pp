@@ -22,7 +22,5 @@ class clgxutil::imageprep (
     }
   }
 
-  file {"${os_tmpdir}/${prebake_script}":
-    source => "puppet:///modules/clgxutil/imageprep/${prebake_script}",
-  }
+
 }

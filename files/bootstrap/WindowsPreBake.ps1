@@ -2,6 +2,7 @@
 $Env:Path += ";C:\Program Files\Puppet Labs\Puppet\bin"
 
 puppet apply -e "class {'static_custom_facts': purge_unmanaged => true, custom_facts => {} }"
+puppet apply -e "include clgxutil::imageprep"
 
 cd c:/windows/temp
 
