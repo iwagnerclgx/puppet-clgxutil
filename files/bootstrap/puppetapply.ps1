@@ -4,6 +4,9 @@ $Env:path =  "C:\ProgramData\chocolatey\bin;C:\Windows\system32;C:\Windows;C:\Wi
 $Env:path += "C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files\Amazon\cfn-bootstrap\;"
 $Env:path += "C:\Program Files\Puppet Labs\Puppet\bin;C:\Program Files\Amazon\AWSCLI\;c:\python27\scripts"
 
+[Console]::OutputEncoding = [System.Text.Encoding]::Default
+# AWS CLI issue with codepage in terminal
+chcp 437
 
 $puppet_temp="c:\windows\temp\puppet"
 $puppet_environment="c:\ProgramData\PuppetLabs\code\environments\production"
