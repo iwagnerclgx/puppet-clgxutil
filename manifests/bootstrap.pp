@@ -35,6 +35,6 @@ class clgxutil::bootstrap {
     source => "puppet:///modules/clgxutil/bootstrap/${bootstrap_unzip}",
   }
   -> file {$puppet_prebake:
-    source => "puppet:///modules/clgxutil/imageprep/${bootstrap_prebake}",
+    source => "puppet:///modules/clgxutil/bootstrap/${bootstrap_prebake}",
   }
 }
