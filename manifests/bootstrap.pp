@@ -11,6 +11,7 @@ class clgxutil::bootstrap {
     }
 
     file {"${bootstrap_dir}/bootstrap.sh":
+      source  => 'puppet:///modules/clgxutil/bootstrap/bootstrap.sh',
       mode    => '0775',
       owner   => 'root',
       group   => 'root',
@@ -18,6 +19,7 @@ class clgxutil::bootstrap {
     }
 
     file {"${bootstrap_dir}/bootstrap.py":
+      source  => 'puppet:///modules/clgxutil/bootstrap/bootstrap.py',
       mode    => '0664',
       owner   => 'root',
       group   => 'root',
@@ -32,7 +34,8 @@ class clgxutil::bootstrap {
       ensure  => directory,
     }
 
-    file {"${bootstrap_dir}/bootstrap.sh":
+    file {"${bootstrap_dir}/bootstrap.ps1":
+      source  => 'puppet:///modules/clgxutil/bootstrap/bootstrap.ps1',
       mode    => '0775',
       owner   => 'root',
       group   => 'root',
@@ -40,6 +43,7 @@ class clgxutil::bootstrap {
     }
 
     file {"${bootstrap_dir}/bootstrap.py":
+      source  => 'puppet:///modules/clgxutil/bootstrap/bootstrap.py',
       mode    => '0664',
       owner   => 'root',
       group   => 'root',
