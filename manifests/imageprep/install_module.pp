@@ -1,9 +1,9 @@
 
 
-define clgxutil::local_module_copy::module {
+define clgxutil::imageprep::install_module {
 
     $abs_source = global_findmodule($title)
-    $abs_dest = "${::clgxutil::local_module_copy::install_dir}/${title}"
+    $abs_dest = "${::clgxutil::imageprep::global_module_dir}/${title}"
 
 
     file { "modulecopy-${title}":

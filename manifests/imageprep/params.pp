@@ -1,6 +1,8 @@
 
 class clgxutil::imageprep::params {
 
+  $global_module_dir = "${::settings::codedir}/modules"
+  $env_code_dir = "${::settings::environmentpath}/${::settings::environment}"
 
   if $facts['kernel'] == 'Linux' {
     $puppet_tmpdir  = '/tmp/puppet'
