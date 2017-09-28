@@ -1,8 +1,6 @@
 
 
 class clgxutil::imageprep (
-  Boolean $install_puppet_tmpdir = false,
-
   String $global_module_dir = $clgxutil::imageprep::params::global_module_dir,
   String $env_code_dir = $clgxutil::imageprep::params::env_code_dir,
   $module_install_list = [],
@@ -22,12 +20,12 @@ class clgxutil::imageprep (
     include clgxutil::imageprep::ec2_windows
   }
 
-
-  # function call with lambda:
+  # Install selected modules to the global module dir
   $module_install_list.each |String $module_name| {
     clgxutil::imageprep::install_module { $module_name: }
   }
 
+  # Remove the global modules from the local dir
   class {'clgxutil::imageprep::install_module_cleanup':
     module_install_list => $module_install_list,
     stage               => cleanup_module,

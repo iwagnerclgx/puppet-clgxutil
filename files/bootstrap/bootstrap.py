@@ -3,8 +3,8 @@ from __future__ import print_function
 
 import logging
 import argparse
-import platform
 import tempfile
+import platform
 import os
 
 from os import path
@@ -22,10 +22,11 @@ PLATFORM = platform.system()
 PLATFORM_ENV = {
     "Linux": {
         "sep": ':',
-        "dir_temp": "/temp",
+        "dir_temp": "/tmp",
         "dir_bootstrap": "/bootstrap",
         "dir_puppettemp": "/tmp/puppet",
         "puppet_envpath": "/etc/puppetlabs/code/environments/production",
+        "cleanup_exclusion_file": "/tmp/.imageprep_tmpfilelist.txt"
     },
     "Windows": {
         "sep": ';',
@@ -33,6 +34,7 @@ PLATFORM_ENV = {
         "dir_bootstrap": "c:\\bootstrap",
         "dir_puppettemp": "c:\\windows\\temp\\puppet",
         "puppet_envpath": "C:\\ProgramData\\PuppetLabs\\code\\environments\\production",
+        "cleanup_exclusion_file": "c:\\windows\\temp\\imageprep_tmpfilelist.txt"
     }
 }
 ENV = PLATFORM_ENV[PLATFORM]
@@ -90,8 +92,7 @@ def build_configure():
 def runtime_configure():
 
     manifest_file = path.join(ENV['puppet_envpath'], "manifest.pp")
-    args = ['--detailed-exitcodes',
-            puppet_args_verbose(),
+    args = ['--detailed-exitcodes' + puppet_args_verbose(),
             manifest_file]
     cmd = ["puppet", "apply"] + args
 
@@ -115,28 +116,50 @@ def build_prep(zipfile):
         logger.warning('Removing Directory Contents %s', puppet_dir)
         rmtree(puppet_dir)
 
+    # Write a list of files in tmp for cleanup exclusion later
+    with open(ENV['cleanup_exclusion_file'], 'w') as fd:
+        fd.write("\n".join(os.listdir(ENV['dir_temp'])))
+
     with ZipFile(zipfile, 'r') as zip_ref:
         zip_ref.extractall(puppet_dir)
 
 
 
-def build_install():
-    """
-    Install puppet modules from build dir to $basemodulepath:
-        puppet apply -e "include clgxutil::local_module_copy"
+def imageprep():
 
-    """
-    os.chdir(ENV['dir_puppettemp'])
     cmd = ['puppet', 'apply',
            '--modulepath', 'modules' + ENV['sep'] + '$basemodulepath',
            '--detailed-exitcodes',
            '--hiera_config', 'hiera.yaml',
+
            puppet_args_verbose()]
 
 
     module_copy = cmd + ['-e', 'include clgxutil::imageprep']
-    process = run_command(module_copy)
+    env_install = cmd + ['-e', "class {'clgxutil::imageprep::install_environment': local_puppet_dir => \"%s\" }" % ENV['dir_puppettemp']]
 
+    os.chdir(ENV['dir_puppettemp'])
+    run_command(module_copy)
+    run_command(env_install)
+
+    with open(ENV['cleanup_exclusion_file'], 'r') as fd:
+        exclude_list = fd.read().split("\n")
+
+    os.chdir(ENV['dir_temp'])
+    temp_files = os.listdir(ENV['dir_temp'])
+    for temp_file in temp_files:
+        if temp_file in exclude_list:
+            logger.info("Skipping Pre Exising temp file: %s" % temp_file)
+        else:
+            logger.info("Deleting temp file/dir: %s" % temp_file)
+
+            try:
+                if path.isfile(temp_file):
+                    os.remove(temp_file)
+                else:
+                    rmtree(temp_file)
+            except Exception as e:
+                logger.warning(e)
 
 def set_facts():
 
@@ -146,6 +169,7 @@ def set_facts():
            puppet_args_verbose()]
     cmd += ['-e', 'include clgxutil::bootstrap::userdata_customfacts']
 
+    # TODO: Determine error handling in bootstrap workflow
     process = run_command(cmd)
 
 
@@ -161,8 +185,8 @@ def define_menu():
     p_build_prep = subparsers.add_parser(
         'build-prep',
         help="Prep the build package for build-configure")
-    p_build_install = subparsers.add_parser(
-        'build-install',
+    p_imageprep = subparsers.add_parser(
+        'imageprep',
         help="Install puppet modules & code for runtime use")
     p_runtime_configure = subparsers.add_parser(
         'runtime-configure',
@@ -173,7 +197,7 @@ def define_menu():
 
     p_build_configure.set_defaults(action='build-configure')
     p_build_prep.set_defaults(action='build-prep')
-    p_build_install.set_defaults(action='build-install')
+    p_imageprep.set_defaults(action='imageprep')
     p_runtime_configure.set_defaults(action='runtime-configure')
     p_set_facts.set_defaults(action='set-facts')
 
@@ -193,8 +217,8 @@ def main():
         build_configure()
     elif args.action == 'build-prep':
         build_prep(args.zipfile)
-    elif args.action == 'build-install':
-        build_install()
+    elif args.action == 'imageprep':
+        imageprep()
     elif args.action == 'runtime-configure':
         runtime_configure()
     elif args.action == 'set-facts':
