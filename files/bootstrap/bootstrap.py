@@ -163,15 +163,11 @@ def imageprep():
 
 def set_facts():
 
-    manifest_file = path.join(ENV['dir_puppettemp'], "manifest.pp")
-    cmd = ['puppet', 'apply',
-           '--modulepath', 'modules' + ENV['sep'] + '$basemodulepath',
-           puppet_args_verbose()]
+    cmd = ['puppet', 'apply', puppet_args_verbose()]
     cmd += ['-e', 'include clgxutil::bootstrap::userdata_customfacts']
 
-    # TODO: Determine error handling in bootstrap workflow
     process = run_command(cmd)
-
+    exit(process.returncode)
 
 def define_menu():
 
