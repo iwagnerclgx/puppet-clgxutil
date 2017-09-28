@@ -15,7 +15,7 @@ from zipfile import ZipFile
 
 
 logging.basicConfig()
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(path.basename(__file__))
 
 
 PLATFORM = platform.system()
