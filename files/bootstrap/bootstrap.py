@@ -116,9 +116,12 @@ def build_prep(zipfile):
         logger.warning('Removing Directory Contents %s', puppet_dir)
         rmtree(puppet_dir)
 
+    existing_files = os.listdir(ENV['dir_temp'])
+    existing_files.remove('puppet.zip')
+
     # Write a list of files in tmp for cleanup exclusion later
     with open(ENV['cleanup_exclusion_file'], 'w') as fd:
-        fd.write("\n".join(os.listdir(ENV['dir_temp'])))
+        fd.write("\n".join(existing_files))
 
     with ZipFile(zipfile, 'r') as zip_ref:
         zip_ref.extractall(puppet_dir)
