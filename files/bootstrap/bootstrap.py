@@ -50,7 +50,7 @@ def cli_exception(message, exitcode=255):
     print(message)
     exit(exitcode)
 
-def run_command(command):
+def run_command(command, valid_exit=[0]):
 
     cmd = command_wrapper(command)
     cmd_text = " ".join(cmd)
@@ -58,6 +58,10 @@ def run_command(command):
     logger.info('Running command %s', cmd_text)
     process = Popen(cmd)
     process.wait()
+
+    if process.returncode not in valid_exit:
+        cli_exception("Command unsuccessful %s" % process.returncode)
+
     return process
 
 def command_wrapper(command):
@@ -84,9 +88,7 @@ def build_configure():
             manifest_file]
     cmd = ["puppet", "apply"] + args
 
-    process = run_command(cmd)
-    if process.returncode != 2:
-        cli_exception("Error: Puppet did not create any resources")
+    run_command(cmd, valid_exit=[2])
 
 
 def runtime_configure():
@@ -96,9 +98,7 @@ def runtime_configure():
             manifest_file]
     cmd = ["puppet", "apply"] + args
 
-    process = run_command(cmd)
-    if process.returncode != 2:
-        cli_exception("Error: Puppet did not create any resources")
+    run_command(cmd, valid_exit=[2])
 
 
 def build_prep(zipfile):
@@ -134,16 +134,16 @@ def imageprep():
            '--modulepath', 'modules' + ENV['sep'] + '$basemodulepath',
            '--detailed-exitcodes',
            '--hiera_config', 'hiera.yaml',
-
            puppet_args_verbose()]
 
 
-    module_copy = cmd + ['-e', 'include clgxutil::imageprep']
-    env_install = cmd + ['-e', "class {'clgxutil::imageprep::install_environment': local_puppet_dir => \"%s\" }" % ENV['dir_puppettemp']]
+    module_copy = 'include clgxutil::imageprep'
+    env_install = (r'class {{"clgxutil::imageprep::install_environment": '
+                   r'local_puppet_dir => "{}" }}').format(ENV['dir_puppettemp'])
 
     os.chdir(ENV['dir_puppettemp'])
-    run_command(module_copy)
-    run_command(env_install)
+    run_command(cmd + ['-e', module_copy], valid_exit=[0,2])
+    run_command(cmd + ['-e', env_install], valid_exit=[0,2])
 
     with open(ENV['cleanup_exclusion_file'], 'r') as fd:
         exclude_list = fd.read().split("\n")
@@ -222,6 +222,8 @@ def main():
         runtime_configure()
     elif args.action == 'set-facts':
         set_facts()
+
+    exit(0)
 
 if __name__ == "__main__":
     main()
