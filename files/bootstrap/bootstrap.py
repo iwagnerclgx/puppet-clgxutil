@@ -138,8 +138,10 @@ def imageprep():
 
 
     module_copy = 'include clgxutil::imageprep'
+    # Some ugly backslash escaping for cmd.exe compatability
     env_install = (r'class {{"clgxutil::imageprep::install_environment": '
-                   r'local_puppet_dir => "{}" }}').format(ENV['dir_puppettemp'])
+                   r'local_puppet_dir => "{}" }}').format(
+                   ENV['dir_puppettemp']).replace("\\", "\\\\")
 
     os.chdir(ENV['dir_puppettemp'])
     run_command(cmd + ['-e', module_copy], valid_exit=[0,2])
