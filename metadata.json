@@ -1,15 +1,15 @@
 {
-  "name": "iwagnerclgx-module_copy",
-  "version": "0.1.0",
+  "name": "iwagnerclgx-clgxutils",
+  "version": "1.0.0",
   "author": "iwagnerclgx",
-  "summary": "Module Copy",
+  "summary": "Utils for AMIFactory",
   "license": "Apache-2.0",
-  "source": "",
-  "project_page": null,
-  "issues_url": null,
+  "source": "https://github.com/iwagnerclgx/puppet-clgxutil",
+  "project_page": "https://github.com/iwagnerclgx/puppet-clgxutil",
+  "issues_url": "https://github.com/iwagnerclgx/puppet-clgxutil/issues",
   "dependencies": [
-    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"},
+    {"name":"puppet-archive","version_requirement":">= 2.0.0"}
   ],
   "data_provider": null
 }
-
