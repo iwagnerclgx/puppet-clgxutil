@@ -85,8 +85,6 @@ def command_wrapper(command):
 
     if platform.system() == "Windows":
         encoded_command = powershell_encode(command)
-        with open('c:/test.txt', 'w') as fd:
-            fd.write(encoded_command)
         return ['powershell' ,'-executionpolicy' ,'bypass', '-encodedCommand' ] + [encoded_command]
     elif platform.system() == "Linux":
         return command
