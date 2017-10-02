@@ -6,12 +6,13 @@ import argparse
 import tempfile
 import platform
 import os
+import re
 
 from os import path
 from shutil import rmtree
 from subprocess import Popen, PIPE
 from zipfile import ZipFile
-
+from base64 import b64encode
 
 
 logging.basicConfig()
@@ -30,11 +31,11 @@ PLATFORM_ENV = {
     },
     "Windows": {
         "sep": ';',
-        "dir_temp": "c:\\windows\\temp",
-        "dir_bootstrap": "c:\\bootstrap",
-        "dir_puppettemp": "c:\\windows\\temp\\puppet",
-        "puppet_envpath": "C:\\ProgramData\\PuppetLabs\\code\\environments\\production",
-        "cleanup_exclusion_file": "c:\\windows\\temp\\imageprep_tmpfilelist.txt"
+        "dir_temp": 'c:/windows/temp',
+        "dir_bootstrap": "c:/bootstrap",
+        "dir_puppettemp": "c:/windows/temp/puppet",
+        "puppet_envpath": "C:/ProgramData/PuppetLabs/code/environments/production",
+        "cleanup_exclusion_file": "c:/windows/temp/imageprep_tmpfilelist.txt"
     }
 }
 ENV = PLATFORM_ENV[PLATFORM]
@@ -64,10 +65,29 @@ def run_command(command, valid_exit=[0]):
 
     return process
 
+def powershell_encode(commandlist):
+
+    reg_escape = re.compile("([$;])")
+    new_commands = []
+    for item in commandlist:
+
+        item = reg_escape.sub(r"`\0", item)
+        if item.find(" ") != -1:
+            item = "'" + item +"'"
+        new_commands.append(item)
+
+    wrapped = '&' + " ".join(new_commands)
+    logger.info('Windows Pre-encoded command: %s', wrapped)
+    encoded = "".join([x + '\x00' for x in unicode(wrapped)])
+    return b64encode(encoded)
+
 def command_wrapper(command):
 
     if platform.system() == "Windows":
-        return ['c:\\windows\\system32\\cmd.exe', '/c'] + command
+        encoded_command = powershell_encode(command)
+        with open('c:/test.txt', 'w') as fd:
+            fd.write(encoded_command)
+        return ['powershell' ,'-executionpolicy' ,'bypass', '-encodedCommand' ] + [encoded_command]
     elif platform.system() == "Linux":
         return command
     else:
