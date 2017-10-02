@@ -71,7 +71,7 @@ def powershell_encode(commandlist):
     new_commands = []
     for item in commandlist:
 
-        item = reg_escape.sub(r"`\0", item)
+        item = reg_escape.sub(r"`\1", item)
         if item.find(" ") != -1:
             item = "'" + item +"'"
         new_commands.append(item)
