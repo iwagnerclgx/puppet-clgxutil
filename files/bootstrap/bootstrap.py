@@ -77,7 +77,7 @@ def puppet_args_verbose():
     return PUPPET_VERBOSE[logger.getEffectiveLevel()]
 
 def build_configure():
-
+    logging.info("Running Puppet apply for image (build-configure)")
     os.chdir(ENV['dir_puppettemp'])
 
     manifest_file = path.join(ENV['dir_puppettemp'], "manifest.pp")
@@ -93,6 +93,8 @@ def build_configure():
 
 def runtime_configure():
 
+    logging.info("Running Puppet apply for image (runtime-configure)")
+
     manifest_file = path.join(ENV['puppet_envpath'], "manifest.pp")
     args = ['--detailed-exitcodes' + puppet_args_verbose(),
             manifest_file]
@@ -102,6 +104,7 @@ def runtime_configure():
 
 
 def build_prep(zipfile):
+    logging.info("Unzipping Puppet Masterless archive (build-prep)")
 
     if not path.isfile(zipfile):
         cli_exception("Error: Can't find %s" % zipfile)
@@ -129,6 +132,7 @@ def build_prep(zipfile):
 
 
 def imageprep():
+    logging.info("Prepping image for Baking (imageprep)")
 
     cmd = ['puppet', 'apply',
            '--modulepath', 'modules' + ENV['sep'] + '$basemodulepath',
@@ -167,6 +171,7 @@ def imageprep():
                 logger.warning(e)
 
 def set_facts():
+    logging.info("Setting instance facts")
 
     cmd = ['puppet', 'apply', puppet_args_verbose()]
     cmd += ['-e', 'include clgxutil::bootstrap::userdata_customfacts']
