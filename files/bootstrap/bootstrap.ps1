@@ -1,16 +1,31 @@
-set-executionpolicy Bypass -force
-$Env:path +=";c:\Python27;C:\Program Files\Puppet Labs\Puppet\bin"
-
-# AWSCLI cant handle codepage in packer
+$ErrorActionPreference="Stop"
+if (Test-Path variable:global:ProgressPreference){
+  $ProgressPreference='SilentlyContinue'
+}
 chcp 437
 
-Start-Transcript -Path "C:\windows\temp\transcript.txt"
+function check_lastexitcode
+{
+
+    param([array]$allowableCodes)
+    if ($allowableCodes -notcontains $LASTEXITCODE ){
+      throw "Last Process wasn't Successful. Exited with ${LASTEXITCODE}"
+    }
+}
+
+trap {
+  stop-transcript
+  $transcipt = get-content c:\windows\temp\transcript.txt
+  write-host $transcript
+  break
+}
+start-transcript -path c:\windows\temp\transcript.txt
+
+$Env:path +=";c:\Python27;c:\Python27\scripts;C:\Program Files\Puppet Labs\Puppet\bin"
 
 $passargs = $args
 & python.exe $PSScriptRoot/bootstrap.py $passargs
-$python_return = $LastExitCode
+check_lastexitcode -allowableCodes @(0)
 
-stop-transcript
-Get-Content "C:\windows\temp\transcript.txt"
-
-exit $LastExitCode
+remove-item -force c:\windows\temp\transcript.txt
+exit 0
