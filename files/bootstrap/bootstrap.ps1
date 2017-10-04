@@ -4,7 +4,6 @@ $Env:path +=";c:\Python27;C:\Program Files\Puppet Labs\Puppet\bin"
 # AWSCLI cant handle codepage in packer
 chcp 437
 
-
 Start-Transcript -Path "C:\windows\temp\transcript.txt"
 
 $passargs = $args

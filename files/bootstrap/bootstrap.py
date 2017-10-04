@@ -10,7 +10,7 @@ import re
 
 from os import path
 from shutil import rmtree
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, list2cmdline
 from zipfile import ZipFile
 from base64 import b64encode
 
@@ -59,34 +59,59 @@ def run_command(command, valid_exit=[0]):
     logger.info('Running command %s', cmd_text)
     process = Popen(cmd)
     process.wait()
+    logger.info('Return code: %s', process.returncode)
 
     if process.returncode not in valid_exit:
-        cli_exception("Command unsuccessful %s" % process.returncode)
+        cli_exception("Command unsuccessful. Returned: %s" % process.returncode)
 
     return process
 
-def powershell_encode(commandlist):
+def powershell_escape(commandlist):
+    """
+    Here we are escaping the sequence into a string so that we can pass the
+    whole encoded string to powershell. I.e. a command inside a command.
 
+    First, loop through the sequence, and backtick escape ; and $
+    Second, pass sequence to subprocess.list2cmdline to generate a command string
+    as it would be by a regular Popen.
+    """
     reg_escape = re.compile("([$;])")
     new_commands = []
     for item in commandlist:
-
         item = reg_escape.sub(r"`\1", item)
-        if item.find(" ") != -1:
-            item = "'" + item +"'"
         new_commands.append(item)
 
-    wrapped = '&' + " ".join(new_commands)
-    logger.info('Windows Pre-encoded command: %s', wrapped)
-    encoded = "".join([x + '\x00' for x in unicode(wrapped)])
+    # Convert list to string
+    cmdstring = '& ' + list2cmdline(new_commands)
+    logger.info('Windows Pre-encoded command: %s', cmdstring)
+    return cmdstring
+
+
+def powershell_encoded_command(cmdstring):
+    """
+    Here we are manually manipulating the UTF encoding to be able to properly
+    base64encode the command
+    """
+    # base64encode the string
+    encoded = "".join([x + '\x00' for x in unicode(cmdstring)])
+    logger.info('Windows encoded command: %s', encoded)
+
     return b64encode(encoded)
 
-def command_wrapper(command):
+def command_wrapper(command, os_platform=None):
 
-    if platform.system() == "Windows":
-        encoded_command = powershell_encode(command)
-        return ['powershell' ,'-executionpolicy' ,'bypass', '-encodedCommand' ] + [encoded_command]
-    elif platform.system() == "Linux":
+    if not os_platform:
+        os_platform = platform.system()
+
+    if os_platform == "Windows":
+        escaped_command = powershell_escape(command)
+        encoded_command = powershell_encoded_command(escaped_command)
+
+        popen_command = [
+            'powershell' ,'-executionpolicy' ,'bypass',
+            '-encodedCommand', encoded_command]
+        return popen_command
+    elif os_platform == "Linux":
         return command
     else:
         cli_exception("Unknown OS type")
