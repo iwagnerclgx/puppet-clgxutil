@@ -27,7 +27,7 @@ class clgxutil::imageprep (
 
   # Remove the global modules from the local dir
   class {'clgxutil::imageprep::install_module_cleanup':
-    module_install_list => $module_install_list,
+    module_cleanup_list => $module_install_list,
     stage               => cleanup_module,
   }
 
