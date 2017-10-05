@@ -64,7 +64,7 @@ def run_command(command, valid_exit=[0]):
     if process.returncode not in valid_exit:
         cli_exception("Command unsuccessful. Returned: %s" % process.returncode)
 
-    return process
+
 
 def powershell_escape(commandlist):
     """
@@ -83,6 +83,7 @@ def powershell_escape(commandlist):
 
     # Convert list to string
     cmdstring = '& ' + list2cmdline(new_commands)
+    cmdstring += '; exit $LASTEXITCODE'
     logger.info('Windows Pre-encoded command: %s', cmdstring)
     return cmdstring
 
@@ -219,8 +220,7 @@ def set_facts():
     cmd = ['puppet', 'apply', puppet_args_verbose()]
     cmd += ['-e', 'include clgxutil::bootstrap::userdata_customfacts']
 
-    process = run_command(cmd)
-    exit(process.returncode)
+    run_command(cmd, valid_exit=[0])
 
 def define_menu():
 
@@ -277,3 +277,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+exit(0)
