@@ -1,9 +1,8 @@
 
 
 class clgxutil::imageprep (
-  String $global_module_dir = $clgxutil::imageprep::params::global_module_dir,
-  String $env_code_dir = $clgxutil::imageprep::params::env_code_dir,
-  $module_install_list = [],
+  Boolean $install_puppet_to_env = false,  # Whether to move the temp puppet code to the environmentpath
+  Array   $module_install_list   = [],     # list of modules to move to the global module dir
 
 ) inherits ::clgxutil::imageprep::params {
 
@@ -11,24 +10,31 @@ class clgxutil::imageprep (
   stage { 'cleanup_module':
     require => Stage['main'],
   }
-
-  # Add bootstrapping files
-  include clgxutil::bootstrap
+  -> stage { 'install_environment':
+    require => Stage['cleanup_module'],
+  }
 
   # configure sysprep
   if $facts['is_ec2'] and $facts['kernel'] == 'Windows' {
     include clgxutil::imageprep::ec2_windows
   }
 
+
   # Install selected modules to the global module dir
-  $module_install_list.each |String $module_name| {
-    clgxutil::imageprep::install_module { $module_name: }
+  class {'clgxutil::imageprep::install_module':
+    module_list => $module_install_list
   }
 
   # Remove the global modules from the local dir
-  class {'clgxutil::imageprep::install_module_cleanup':
-    module_cleanup_list => $module_install_list,
-    stage               => cleanup_module,
+  class {'clgxutil::imageprep::cleanup_module':
+    module_list => $module_install_list,
+    stage       => cleanup_module,
+  }
+
+  if( $install_puppet_to_env ) {
+    class {'clgxutil::imageprep::install_environment':
+      stage   => install_environment,
+    }
   }
 
 

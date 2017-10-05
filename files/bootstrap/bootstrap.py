@@ -186,12 +186,9 @@ def imageprep():
 
 
     module_copy = 'include clgxutil::imageprep'
-    env_install = ('class {{\'clgxutil::imageprep::install_environment\': '
-                  'local_puppet_dir => \'{}\' }}').format(ENV['dir_puppettemp'])
 
     os.chdir(ENV['dir_puppettemp'])
     run_command(cmd + ['-e', module_copy], valid_exit=[0,2])
-    run_command(cmd + ['-e', env_install], valid_exit=[0,2])
 
     with open(ENV['cleanup_exclusion_file'], 'r') as fd:
         exclude_list = fd.read().split("\n")
