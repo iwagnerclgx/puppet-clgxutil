@@ -207,8 +207,10 @@ def set_runtime_facts():
 
 def set_build_facts():
     logging.info("Setting instance build facts")
+    cmd = ['puppet', 'apply',
+           '--modulepath', 'modules' + ENV['sep'] + '$basemodulepath']
 
-    cmd = ['puppet', 'apply', puppet_args_verbose()]
+    os.chdir(ENV['dir_temp'])
     cmd += ['-e', 'class {"clgxutil::bootstrap::userdata_customfacts": static_facts => {"image_builder" =>{"name" => "image_builder", "value" => "build"}} }']
 
     run_command(cmd, valid_exit=[0])
