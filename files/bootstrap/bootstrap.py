@@ -124,7 +124,7 @@ def puppet_apply():
     os.chdir(ENV['dir_puppettemp'])
 
     manifest_file = path.join(ENV['dir_puppettemp'], "manifest.pp")
-    args = ['--modulepath', 'modules' + ENV['sep'] + '$basemodulepath',
+    args = ['--modulepath', 'site' + ENV['sep'] + 'modules' + ENV['sep'] + '$basemodulepath',
             '--detailed-exitcodes',
             '--hiera_config', 'hiera.yaml',
             puppet_args_verbose(),
@@ -166,7 +166,7 @@ def imageprep():
     logging.info("Prepping image for Baking (imageprep)")
 
     cmd = ['puppet', 'apply',
-           '--modulepath', 'modules' + ENV['sep'] + '$basemodulepath',
+           '--modulepath', 'site' + ENV['sep'] + 'modules' + ENV['sep'] + '$basemodulepath',
            '--detailed-exitcodes',
            '--hiera_config', 'hiera.yaml',
            puppet_args_verbose()]
@@ -200,22 +200,22 @@ def set_runtime_facts():
     logging.info("Setting instance facts")
 
     cmd = ['puppet', 'apply',
-           '--modulepath', 'modules' + ENV['sep'] + '$basemodulepath',
+           '--modulepath', 'site' + ENV['sep'] + 'modules' + ENV['sep'] + '$basemodulepath',
            '--hiera_config', 'hiera.yaml',
            puppet_args_verbose()]
-    cmd += ['-e', 'include clgxutil::bootstrap::userdata_customfacts']
+    cmd += ['-e', 'class {"clgxutil::bootstrap::userdata_customfacts": static_facts => {"image_lifecycle" =>{"name" => "image_lifecycle", "value" => "runtime"}} }']
 
     run_command(cmd, valid_exit=[0])
 
 def set_build_facts():
     logging.info("Setting instance build facts")
     cmd = ['puppet', 'apply',
-           '--modulepath', 'modules' + ENV['sep'] + '$basemodulepath',
+           '--modulepath', 'site' + ENV['sep'] + 'modules' + ENV['sep'] + '$basemodulepath',
            '--hiera_config', 'hiera.yaml',
            puppet_args_verbose()]
 
     os.chdir(ENV['dir_puppettemp'])
-    cmd += ['-e', 'class {"clgxutil::bootstrap::userdata_customfacts": static_facts => {"image_builder" =>{"name" => "image_builder", "value" => "build"}} }']
+    cmd += ['-e', 'class {"clgxutil::bootstrap::userdata_customfacts": static_facts => {"image_lifecycle" =>{"name" => "image_lifecycle", "value" => "build"}} }']
     run_command(cmd, valid_exit=[0])
 
 def define_menu():

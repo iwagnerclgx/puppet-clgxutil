@@ -3,7 +3,6 @@
 class clgxutil::imageprep (
   Boolean $install_puppet_to_env = false,  # Whether to move the temp puppet code to the environmentpath
   Array   $module_install_list   = [],     # list of modules to move to the global module dir
-
 ) inherits ::clgxutil::imageprep::params {
 
   # Used to cleanup installed modules
@@ -17,6 +16,12 @@ class clgxutil::imageprep (
   # configure sysprep
   if $facts['is_ec2'] and $facts['kernel'] == 'Windows' {
     include clgxutil::imageprep::ec2_windows
+  }
+
+  file_line {'env_modulepath':
+    path  => "${::settings::environmentpath}/production/environment.conf",
+    line  => "modulepath = \"site${path_sep}modules${path_sep}\$basemodulepath\"",
+    match => 'modulepath\ \='
   }
 
   class {'static_custom_facts':

@@ -12,6 +12,7 @@ class clgxutil::imageprep::params {
     $cmd_recurse_del = 'rm -Rf'
     $cmd_test_dir = '/usr/bin/test -d'
     $cmd_path = '/bin'
+    $path_sep = ':'
 
   } elsif $facts['kernel'] == 'Windows' {
 
@@ -21,6 +22,8 @@ class clgxutil::imageprep::params {
     $cmd_recurse_del = 'powershell.exe -executionpolicy bypass remove-item -force -recurse -path'
     $cmd_test_dir = 'powershell.exe -executionpolicy bypass Test-Path -PathType Container -Path'
     $cmd_path = 'C:/Windows/System32/WindowsPowerShell/v1.0/'
+    $path_sep = ';'
+
   }
 
 
