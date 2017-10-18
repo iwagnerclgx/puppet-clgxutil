@@ -65,7 +65,6 @@ def run_command(command, valid_exit=[0]):
         cli_exception("Command unsuccessful. Returned: %s" % process.returncode)
 
 
-
 def powershell_escape(commandlist):
     """
     Here we are escaping the sequence into a string so that we can pass the
@@ -200,7 +199,11 @@ def imageprep():
 def set_runtime_facts():
     logging.info("Setting instance facts")
 
-    cmd = ['puppet', 'apply', puppet_args_verbose()]
+    cmd = ['puppet', 'apply',
+           '--modulepath', 'modules' + ENV['sep'] + '$basemodulepath',
+           '--detailed-exitcodes',
+           '--hiera_config', 'hiera.yaml',
+           puppet_args_verbose()]
     cmd += ['-e', 'include clgxutil::bootstrap::userdata_customfacts']
 
     run_command(cmd, valid_exit=[0])
@@ -208,11 +211,13 @@ def set_runtime_facts():
 def set_build_facts():
     logging.info("Setting instance build facts")
     cmd = ['puppet', 'apply',
-           '--modulepath', 'modules' + ENV['sep'] + '$basemodulepath']
+           '--modulepath', 'modules' + ENV['sep'] + '$basemodulepath',
+           '--detailed-exitcodes',
+           '--hiera_config', 'hiera.yaml',
+           puppet_args_verbose()]
 
-    os.chdir(ENV['dir_temp'])
+    os.chdir(ENV['dir_puppettemp'])
     cmd += ['-e', 'class {"clgxutil::bootstrap::userdata_customfacts": static_facts => {"image_builder" =>{"name" => "image_builder", "value" => "build"}} }']
-
     run_command(cmd, valid_exit=[0])
 
 def define_menu():
