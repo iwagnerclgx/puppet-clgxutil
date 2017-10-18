@@ -201,7 +201,6 @@ def set_runtime_facts():
 
     cmd = ['puppet', 'apply',
            '--modulepath', 'modules' + ENV['sep'] + '$basemodulepath',
-           '--detailed-exitcodes',
            '--hiera_config', 'hiera.yaml',
            puppet_args_verbose()]
     cmd += ['-e', 'include clgxutil::bootstrap::userdata_customfacts']
@@ -212,7 +211,6 @@ def set_build_facts():
     logging.info("Setting instance build facts")
     cmd = ['puppet', 'apply',
            '--modulepath', 'modules' + ENV['sep'] + '$basemodulepath',
-           '--detailed-exitcodes',
            '--hiera_config', 'hiera.yaml',
            puppet_args_verbose()]
 
