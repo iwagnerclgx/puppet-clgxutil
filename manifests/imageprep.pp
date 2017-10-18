@@ -19,6 +19,10 @@ class clgxutil::imageprep (
     include clgxutil::imageprep::ec2_windows
   }
 
+  class {'static_custom_facts':
+    purge_unmanaged => true,
+    custom_facts    => {}
+  }
 
   # Install selected modules to the global module dir
   class {'clgxutil::imageprep::install_module':

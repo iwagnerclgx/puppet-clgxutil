@@ -1,9 +1,12 @@
 
 
-class clgxutil::bootstrap::userdata_customfacts {
+class clgxutil::bootstrap::userdata_customfacts(
+  Hash  $static_facts = {}
+  ) {
 
   # Get the base64 encoded json in userdata, returned as Hash
-  $add_facts = clgxutil::get_userdata_customfacts()
+  $userdata_facts = clgxutil::get_userdata_customfacts()
+  $add_facts = merge($static_facts, $userdata_facts)
 
   if $add_facts {
     # Only apply if facts are found in case something else is

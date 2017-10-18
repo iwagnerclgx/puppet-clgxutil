@@ -120,8 +120,8 @@ def command_wrapper(command, os_platform=None):
 def puppet_args_verbose():
     return PUPPET_VERBOSE[logger.getEffectiveLevel()]
 
-def build_configure():
-    logging.info("Running Puppet apply for image (build-configure)")
+def puppet_apply():
+    logging.info("Running Puppet apply for image (puppet-apply)")
     os.chdir(ENV['dir_puppettemp'])
 
     manifest_file = path.join(ENV['dir_puppettemp'], "manifest.pp")
@@ -129,18 +129,6 @@ def build_configure():
             '--detailed-exitcodes',
             '--hiera_config', 'hiera.yaml',
             puppet_args_verbose(),
-            manifest_file]
-    cmd = ["puppet", "apply"] + args
-
-    run_command(cmd, valid_exit=[2])
-
-
-def runtime_configure():
-
-    logging.info("Running Puppet apply for image (runtime-configure)")
-
-    manifest_file = path.join(ENV['puppet_envpath'], "manifest.pp")
-    args = ['--detailed-exitcodes' + puppet_args_verbose(),
             manifest_file]
     cmd = ["puppet", "apply"] + args
 
@@ -209,11 +197,19 @@ def imageprep():
             except Exception as e:
                 logger.warning(e)
 
-def set_facts():
+def set_runtime_facts():
     logging.info("Setting instance facts")
 
     cmd = ['puppet', 'apply', puppet_args_verbose()]
     cmd += ['-e', 'include clgxutil::bootstrap::userdata_customfacts']
+
+    run_command(cmd, valid_exit=[0])
+
+def set_build_facts():
+    logging.info("Setting instance build facts")
+
+    cmd = ['puppet', 'apply', puppet_args_verbose()]
+    cmd += ['-e', 'class {"clgxutil::bootstrap::userdata_customfacts": static_facts => {"image_builder" =>{"name" => "image_builder", "value" => "build"}} }']
 
     run_command(cmd, valid_exit=[0])
 
@@ -223,27 +219,27 @@ def define_menu():
     parser.add_argument('--verbose', '-v', default=0, help="Verbosity (additional for more)", action='count')
     subparsers = parser.add_subparsers()
 
-    p_build_configure = subparsers.add_parser(
-        'build-configure',
+    p_puppet_apply = subparsers.add_parser(
+        'puppet-apply',
         help="Run Puppet apply for image builds")
     p_build_prep = subparsers.add_parser(
         'build-prep',
-        help="Prep the build package for build-configure")
+        help="Prep the build package for puppet-apply")
     p_imageprep = subparsers.add_parser(
         'imageprep',
         help="Install puppet modules & code for runtime use")
-    p_runtime_configure = subparsers.add_parser(
-        'runtime-configure',
-        help="Run Puppet apply for system runtime")
-    p_set_facts = subparsers.add_parser(
-        'set-facts',
+    p_set_runtime_facts = subparsers.add_parser(
+        'set-runtime-facts',
         help="Set custom facts from environment (user-data)")
+    p_set_build_facts = subparsers.add_parser(
+        'set-build-facts',
+        help="Set Facts to apply image build classes only")
 
-    p_build_configure.set_defaults(action='build-configure')
+    p_puppet_apply.set_defaults(action='puppet-apply')
     p_build_prep.set_defaults(action='build-prep')
     p_imageprep.set_defaults(action='imageprep')
-    p_runtime_configure.set_defaults(action='runtime-configure')
-    p_set_facts.set_defaults(action='set-facts')
+    p_set_runtime_facts.set_defaults(action='set-runtime-facts')
+    p_set_build_facts.set_defaults(action='set-build-facts')
 
     p_build_prep.add_argument("zipfile", help="Path to Puppet zip file")
     return parser
@@ -257,16 +253,16 @@ def main():
         if args.verbose < len(VERBOSE_LEVELS) else VERBOSE_LEVELS[-1]
     logger.setLevel(verbosity)
 
-    if args.action == 'build-configure':
-        build_configure()
+    if args.action == 'puppet-apply':
+        puppet_apply()
     elif args.action == 'build-prep':
         build_prep(args.zipfile)
     elif args.action == 'imageprep':
         imageprep()
-    elif args.action == 'runtime-configure':
-        runtime_configure()
-    elif args.action == 'set-facts':
-        set_facts()
+    elif args.action == 'set-runtime-facts':
+        set_runtime_facts()
+    elif args.action == 'set-build-facts':
+        set_build_facts()
 
     exit(0)
 
