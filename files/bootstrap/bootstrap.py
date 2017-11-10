@@ -82,6 +82,8 @@ def powershell_escape(commandlist):
 
     # Convert list to string
     cmdstring = '& ' + list2cmdline(new_commands)
+    # Change \ to ` -- Powershell encoded commands use different escape
+    cmdstring = cmdstring.replace(chr(92), '`')
     cmdstring += '; exit $LASTEXITCODE'
     logger.info('Windows Pre-encoded command: %s', cmdstring)
     return cmdstring
@@ -274,4 +276,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-exit(0)
+    exit(0)

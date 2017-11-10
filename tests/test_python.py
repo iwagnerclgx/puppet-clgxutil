@@ -40,7 +40,12 @@ def test_powershell_escape_5():
 def test_powershell_escape_6():
     cmd = ["test", "test=value1;$value2"]
     result = bootstrap.powershell_escape(cmd)
-    assert result == '& test test=value1`;`$value2'
+    assert result == '& test test=value1`;`$value2; exit $LASTEXITCODE'
+
+def test_powershell_escape_7():
+    cmd = ["test", 'test "$value2"']
+    result = bootstrap.powershell_escape(cmd)
+    assert result == '& test "test `"`$value2`""; exit $LASTEXITCODE'
 
 
 def test_powershell_encoded_command():
