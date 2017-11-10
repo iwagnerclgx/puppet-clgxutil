@@ -125,7 +125,7 @@ def puppet_apply():
     logging.info("Running Puppet apply for image (puppet-apply)")
     os.chdir(ENV['dir_puppettemp'])
 
-    manifest_file = path.join(ENV['dir_puppettemp'], "manifest.pp")
+    manifest_file = "/".join([ENV['dir_puppettemp'], "manifest.pp"])
     args = ['--modulepath', 'site' + ENV['sep'] + 'modules' + ENV['sep'] + '$basemodulepath',
             '--detailed-exitcodes',
             '--hiera_config', 'hiera.yaml',
