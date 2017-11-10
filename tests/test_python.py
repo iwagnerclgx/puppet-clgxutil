@@ -15,27 +15,27 @@ import bootstrap
 def test_powershell_escape_1():
     cmd = ["test test"]
     result = bootstrap.powershell_escape(cmd)
-    assert result == '& "test test"'
+    assert result == '& "test test"; exit $LASTEXITCODE'
 
 def test_powershell_escape_2():
     cmd = ["test", "test"]
     result = bootstrap.powershell_escape(cmd)
-    assert result == '& test test'
+    assert result == '& test test; exit $LASTEXITCODE'
 
 def test_powershell_escape_3():
     cmd = ["test", "test", 'string with space and \' single quote']
     result = bootstrap.powershell_escape(cmd)
-    assert result == '& test test "string with space and \' single quote"'
+    assert result == '& test test "string with space and \' single quote"; exit $LASTEXITCODE'
 
 def test_powershell_escape_4():
     cmd = ["test", "test=value1;value2"]
     result = bootstrap.powershell_escape(cmd)
-    assert result == '& test test=value1`;value2'
+    assert result == '& test test=value1`;value2; exit $LASTEXITCODE'
 
 def test_powershell_escape_5():
     cmd = ["test", "test=value1$value2"]
     result = bootstrap.powershell_escape(cmd)
-    assert result == '& test test=value1`$value2'
+    assert result == '& test test=value1`$value2; exit $LASTEXITCODE'
 
 def test_powershell_escape_6():
     cmd = ["test", "test=value1;$value2"]
