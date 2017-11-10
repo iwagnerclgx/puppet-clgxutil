@@ -160,7 +160,7 @@ def build_prep(zipfile):
     with open(ENV['cleanup_exclusion_file'], 'w') as fd:
         fd.write("\n".join(existing_files))
 
-    path.mkdir(puppet_dir)
+    os.mkdir(puppet_dir)
     os.chdir(puppet_dir)
 
     with ZipFile(zipfile, 'r') as zip_ref:
