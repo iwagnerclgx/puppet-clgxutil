@@ -28,5 +28,4 @@ write-host "Running bootstrap.py ${passargs}"
 & python.exe $PSScriptRoot/bootstrap.py $passargs
 check_lastexitcode -allowableCodes @(0)
 
-remove-item -force c:\windows\temp\transcript.txt
 exit 0
