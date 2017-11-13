@@ -39,9 +39,8 @@ PLATFORM_ENV = {
     }
 }
 ENV = PLATFORM_ENV[PLATFORM]
-VERBOSE_LEVELS = (logging.WARNING, logging.INFO, logging.DEBUG)
+VERBOSE_LEVELS = (logging.INFO, logging.DEBUG)
 PUPPET_VERBOSE = {
-    logging.WARNING: "",
     logging.INFO: "--verbose",
     logging.DEBUG: "--debug",
 }
@@ -137,7 +136,7 @@ def puppet_apply():
 
 
 def build_prep(zipfile):
-    logging.info("Unzipping Puppet Masterless archive (build-prep)")
+    logger.info("Unzipping Puppet Masterless archive (build-prep)")
 
     if not path.isfile(zipfile):
         cli_exception("Error: Can't find %s" % zipfile)
@@ -154,8 +153,7 @@ def build_prep(zipfile):
 
 
     existing_files = os.listdir(ENV['dir_temp'])
-    existing_files.remove('puppet.zip')
-
+    logger.debug('Pre-existing files: %s', existing_files)
     # Write a list of files in tmp for cleanup exclusion later
     with open(ENV['cleanup_exclusion_file'], 'w') as fd:
         fd.write("\n".join(existing_files))
@@ -169,7 +167,7 @@ def build_prep(zipfile):
 
 
 def imageprep():
-    logging.info("Prepping image for Baking (imageprep)")
+    logger.info("Prepping image for Baking (imageprep)")
 
     cmd = ['puppet', 'apply',
            '--modulepath', 'site' + ENV['sep'] + 'modules' + ENV['sep'] + '$basemodulepath',
@@ -203,7 +201,7 @@ def imageprep():
                 logger.warning(e)
 
 def set_runtime_facts():
-    logging.info("Setting instance facts")
+    logger.info("Setting instance facts")
 
     cmd = ['puppet', 'apply',
            '--modulepath', 'site' + ENV['sep'] + 'modules' + ENV['sep'] + '$basemodulepath',
@@ -214,7 +212,7 @@ def set_runtime_facts():
     run_command(cmd, valid_exit=[0])
 
 def set_build_facts():
-    logging.info("Setting instance build facts")
+    logger.info("Setting instance build facts")
     cmd = ['puppet', 'apply',
            '--modulepath', 'site' + ENV['sep'] + 'modules' + ENV['sep'] + '$basemodulepath',
            '--hiera_config', 'hiera.yaml',
@@ -258,7 +256,6 @@ def define_menu():
 def main():
     parser = define_menu()
     args = parser.parse_args()
-
 
     verbosity = VERBOSE_LEVELS[args.verbose] \
         if args.verbose < len(VERBOSE_LEVELS) else VERBOSE_LEVELS[-1]

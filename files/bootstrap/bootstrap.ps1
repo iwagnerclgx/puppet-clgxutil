@@ -24,6 +24,7 @@ start-transcript -path c:\windows\temp\transcript.txt
 $Env:path +=";c:\Python27;c:\Python27\scripts;C:\Program Files\Puppet Labs\Puppet\bin"
 
 $passargs = $args
+write-host "Running bootstrap.py ${passargs}"
 & python.exe $PSScriptRoot/bootstrap.py $passargs
 check_lastexitcode -allowableCodes @(0)
 
