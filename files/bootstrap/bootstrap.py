@@ -55,7 +55,7 @@ def run_command(command, valid_exit=[0]):
     cmd = command_wrapper(command)
     cmd_text = " ".join(cmd)
 
-    logger.info('Running command %s', cmd_text)
+    logger.debug('Running command %s', cmd_text)
     process = Popen(cmd)
     process.wait()
     logger.info('Return code: %s', process.returncode)
@@ -84,7 +84,7 @@ def powershell_escape(commandlist):
     # Change \ to ` -- Powershell encoded commands use different escape
     cmdstring = cmdstring.replace(chr(92), '`')
     cmdstring += '; exit $LASTEXITCODE'
-    logger.info('Windows Pre-encoded command: %s', cmdstring)
+    logger.debug('Windows Pre-encoded command: %s', cmdstring)
     return cmdstring
 
 
@@ -95,11 +95,13 @@ def powershell_encoded_command(cmdstring):
     """
     # base64encode the string
     encoded = "".join([x + '\x00' for x in unicode(cmdstring)])
-    logger.info('Windows encoded command: %s', encoded)
+    logger.debug('Windows encoded command: %s', encoded)
 
     return b64encode(encoded)
 
 def command_wrapper(command, os_platform=None):
+
+    logger.info('New command: %s', command)
 
     if not os_platform:
         os_platform = platform.system()
@@ -120,7 +122,10 @@ def command_wrapper(command, os_platform=None):
 def puppet_args_verbose():
     return PUPPET_VERBOSE[logger.getEffectiveLevel()]
 
-def puppet_apply():
+def puppet_apply(ignore_apply_error=False):
+
+    # Allow all detailed-exitcodes if ignore, else 2
+    acceptable_return = range(0,7) if ignore_apply_error else [2]
     logging.info("Running Puppet apply for image (puppet-apply)")
     os.chdir(ENV['dir_puppettemp'])
 
@@ -132,7 +137,7 @@ def puppet_apply():
             manifest_file]
     cmd = ["puppet", "apply"] + args
 
-    run_command(cmd, valid_exit=[2])
+    run_command(cmd, valid_exit=acceptable_return)
 
 
 def build_prep(zipfile):
@@ -226,6 +231,8 @@ def define_menu():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--verbose', '-v', default=0, help="Verbosity (additional for more)", action='count')
+    parser.add_argument('--ignore-apply-error', default=False, action='store_true',
+                        help="Don't error on puppet apply")
     subparsers = parser.add_subparsers()
 
     p_puppet_apply = subparsers.add_parser(
@@ -262,7 +269,7 @@ def main():
     logger.setLevel(verbosity)
 
     if args.action == 'puppet-apply':
-        puppet_apply()
+        puppet_apply(ignore_apply_error=args.ignore_apply_error)
     elif args.action == 'build-prep':
         build_prep(args.zipfile)
     elif args.action == 'imageprep':

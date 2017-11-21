@@ -14,12 +14,8 @@ function check_lastexitcode
 }
 
 trap {
-  stop-transcript
-  $transcipt = get-content c:\windows\temp\transcript.txt
-  write-host $transcript
   break
 }
-start-transcript -path c:\windows\temp\transcript.txt
 
 $Env:path +=";c:\Python27;c:\Python27\scripts;C:\Program Files\Puppet Labs\Puppet\bin"
 
